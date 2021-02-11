@@ -1147,6 +1147,8 @@ class RequestFactory {
 
 		sourceBuilder.explain(query.getExplain());
 
+		query.getRescorerQueries().stream().map(RescorerQuery::getRescorerBuilder).forEach(sourceBuilder::addRescorer);
+
 		request.source(sourceBuilder);
 		return request;
 	}
@@ -1228,6 +1230,8 @@ class RequestFactory {
 		}
 
 		searchRequestBuilder.setExplain(query.getExplain());
+
+		query.getRescorerQueries().stream().map(RescorerQuery::getRescorerBuilder).forEach(searchRequestBuilder::addRescorer);
 
 		return searchRequestBuilder;
 	}

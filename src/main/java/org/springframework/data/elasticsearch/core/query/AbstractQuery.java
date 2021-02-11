@@ -20,6 +20,7 @@ import static java.util.Collections.*;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,6 +63,7 @@ abstract class AbstractQuery implements Query {
 	@Nullable private Duration scrollTime;
 	@Nullable private TimeValue timeout;
 	private boolean explain = false;
+	protected List<RescorerQuery> rescorerQueries = new ArrayList<>();
 
 	@Override
 	@Nullable
@@ -282,5 +284,21 @@ abstract class AbstractQuery implements Query {
 	 */
 	public void setExplain(boolean explain) {
 		this.explain = explain;
+	}
+
+	@Override
+	public void addRescorerQuery(RescorerQuery rescorerQuery){
+		this.rescorerQueries.add(rescorerQuery);
+	}
+
+	@Override
+	public void setRescorerQueries(List<RescorerQuery> rescorerQueryList){
+		this.rescorerQueries.clear();
+		this.rescorerQueries.addAll(rescorerQueryList);
+	}
+
+	@Override
+	public List<RescorerQuery> getRescorerQueries() {
+		return rescorerQueries;
 	}
 }

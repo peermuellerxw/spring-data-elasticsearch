@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import java.util.stream.Collectors;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.common.unit.TimeValue;
@@ -28,6 +29,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.rescore.QueryRescorerBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.lang.Nullable;
@@ -70,6 +72,7 @@ public class NativeSearchQueryBuilder {
 	@Nullable private Integer maxResults;
 	@Nullable private Boolean trackTotalHits;
 	@Nullable private TimeValue timeout;
+	private final List<QueryRescorerBuilder> queryRescorerBuilders = new ArrayList<>();
 
 	public NativeSearchQueryBuilder withQuery(QueryBuilder queryBuilder) {
 		this.queryBuilder = queryBuilder;
@@ -183,9 +186,14 @@ public class NativeSearchQueryBuilder {
 		this.trackTotalHits = trackTotalHits;
 		return this;
 	}
-	
-	public NativeSearchQueryBuilder withTimeout(TimeValue timeout) {   
+
+	public NativeSearchQueryBuilder withTimeout(TimeValue timeout) {
 		this.timeout = timeout;
+		return this;
+	}
+
+	public NativeSearchQueryBuilder withRescorerQuery(QueryRescorerBuilder queryRescorerBuilder) {
+		this.queryRescorerBuilders.add(queryRescorerBuilder);
 		return this;
 	}
 
@@ -250,10 +258,17 @@ public class NativeSearchQueryBuilder {
 		}
 
 		nativeSearchQuery.setTrackTotalHits(trackTotalHits);
-		
+
 		if (timeout != null) {
 			nativeSearchQuery.setTimeout(timeout);
 		}
+
+    if (!isEmpty(queryRescorerBuilders)) {
+      nativeSearchQuery.setRescorerQueries(
+          queryRescorerBuilders.stream()
+              .map(RescorerQuery::new)
+              .collect(Collectors.toList()));
+    }
 
 		return nativeSearchQuery;
 	}
